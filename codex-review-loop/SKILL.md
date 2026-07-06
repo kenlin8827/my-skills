@@ -51,7 +51,7 @@ Run an iterative review cycle with `codex` (OpenAI Codex CLI) as a second-opinio
    - Never use `--dangerously-bypass-approvals-and-sandbox` for review.
    - Do not create commits unless the user explicitly asked for commits.
    - Preserve unrelated user changes in the working tree.
-   - Create or update a review log under `.codex/review-loop/` unless the user gives another path. If the user requested no writes or the environment is read-only, keep the same log structure in the final response instead.
+   - Create or update a per-run review directory under `.codex/review-loop/` unless the user gives another path. If the user requested no writes or the environment is read-only, keep the same log structure in the final response instead.
 
 4. Start codex session:
    Pass long prompts through stdin (`-`) instead of a single shell-quoted argument when practical. Adapt the pipe/heredoc syntax to the current shell.
@@ -123,11 +123,17 @@ Run an iterative review cycle with `codex` (OpenAI Codex CLI) as a second-opinio
 
 # Review Log
 
-Create one log per review under `.codex/review-loop/`, for example:
+Create one directory per review under `.codex/review-loop/`, for example:
 
-- `.codex/review-loop/code-<YYYYMMDD-HHMMSS>.md`
-- `.codex/review-loop/plan-<YYYYMMDD-HHMMSS>.md`
-- `.codex/review-loop/code-plan-<YYYYMMDD-HHMMSS>.md`
+- `.codex/review-loop/code-<YYYYMMDD-HHMMSS>/`
+- `.codex/review-loop/plan-<YYYYMMDD-HHMMSS>/`
+- `.codex/review-loop/code-plan-<YYYYMMDD-HHMMSS>/`
+
+Put the main log at `review.md` inside that directory. If useful, store round-specific raw artifacts alongside it:
+
+- `round-1-codex-output.md`
+- `round-1-diff-summary.md`
+- `round-1-verification.md`
 
 If the repository already uses another agent-state directory, follow the local convention. Do not put review logs in the repository root unless the user explicitly requests it.
 Treat review logs as process artifacts: do not commit them unless the user explicitly wants an auditable review record.
@@ -143,6 +149,7 @@ Use this structure:
 - branch: <branch>
 - head: <sha>
 - scope: <diff/files/PR range/doc>
+- directory: <.codex/review-loop/<type>-<YYYYMMDD-HHMMSS>/>
 
 ## Round N
 
@@ -179,7 +186,7 @@ Stop with residual risk, not as clean completion, when one of these is true:
 - 修订: P0=X, P1=Y, P2=Z
 - 误报: A / 已知忽略: B / 未决: C
 - 验证: <commands run or not run>
-- review log: <path | inline in final response | not written due to read-only/no-write constraint>
+- review log: <directory/review.md | inline in final response | not written due to read-only/no-write constraint>
 - 产物: <changed files | commit sha if user requested commits | plan 路径 vN>
 ```
 
