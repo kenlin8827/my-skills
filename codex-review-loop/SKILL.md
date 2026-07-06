@@ -19,6 +19,7 @@ Run an iterative review cycle with `codex` (OpenAI Codex CLI) as a second-opinio
 - Adapt command syntax to the host shell: PowerShell here-strings, bash heredocs, direct stdin pipes, or temporary prompt files are all acceptable when they preserve the same prompt content.
 - If the primary agent cannot write process logs, keep the review log inline in the final response. If it cannot run shell commands, report that `codex` cannot be invoked from this environment and stop.
 - The primary agent owns all edits and final decisions. Codex CLI remains a reviewer even when the primary agent is also Codex.
+- Other installed skills may be used only when directly relevant. If Ponytail or `ponytail-review` is active, treat it as an advisory lens for over-engineering and minimal-change opportunities; it must not override correctness, safety, API contracts, required tests, severity classification, Fix Authority, review logging, or termination rules.
 
 # Severity
 
@@ -79,6 +80,7 @@ Decide whether to fix automatically from severity, confidence, and impact:
    请对 <绝对路径或目标 diff/文件/PR 范围> 做代码 review，只输出真实的 P0/P1/P2 问题。
    范围: 以目标变更为入口，但可以检查相关调用方、被调用方、API 消费方、配置、测试和文档来判断影响；不要局限于单个文件或单行。
    输出边界: findings 必须与目标变更存在可追溯关系，包括直接影响和必要的传递影响；不要报告无关的历史问题。
+   可选 skills: 如果 Ponytail 或 ponytail-review 可用且与目标变更直接相关，可以用它识别过度工程和最小修改机会；但只报告达到 P2 或支撑 P0/P1/P2 的问题，不要让它覆盖正确性、安全、API 契约和必要测试。
    严重度: P0=数据丢失/安全/生产中断/阻断主流程; P1=高概率用户回归/API 契约破坏/并发或性能严重问题/关键测试缺口; P2=应修复的边界问题、维护性风险或非关键测试缺口; 不要输出 P3/风格偏好。
    格式: <优先级> | <文件:行号> | <问题> | <建议修复>。
    如果没有问题，明确输出: no issues。
@@ -97,6 +99,7 @@ Decide whether to fix automatically from severity, confidence, and impact:
    你是只读 reviewer。不要修改文件、不要创建 commit、不要运行破坏性命令。
    请审查以下方案，输出 P0/P1/P2 优先级问题清单。
    输出边界: findings 必须与本方案目标、约束或可追溯影响相关；不要报告无关议题。
+   可选 skills: 如果 Ponytail 或 ponytail-review 可用且与方案直接相关，可以用它识别过度设计、无用抽象和更小方案；但只报告达到 P2 或支撑 P0/P1/P2 的问题，不要让它覆盖正确性、安全、API 契约和必要验收标准。
    严重度: P0=方案会导致安全/数据/上线阻断或核心目标不可达; P1=关键需求遗漏、重大矛盾、不可行依赖或明显扩展性/性能风险; P2=应澄清的边界、验收标准、操作风险或非关键缺口; 不要输出 P3/风格偏好。
    格式: <优先级> | <章节/段落> | <问题> | <建议修改>。
    如果没有问题，明确输出: no issues。
