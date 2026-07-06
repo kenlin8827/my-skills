@@ -27,6 +27,17 @@ Run an iterative review cycle with `codex` (OpenAI Codex CLI) as a second-opinio
 - **P2** - Maintainability, edge-case correctness, incomplete non-critical tests, confusing behavior, or implementation risk that should be fixed before merge when practical.
 - **Ignore / P3** - Style preference, broad refactor suggestion, speculative concern without a concrete failure mode, or unrelated pre-existing issue.
 
+# Fix Authority
+
+Decide whether to fix automatically from severity, confidence, and impact:
+
+- **Auto-fix** only when the finding is accepted, the fix is deterministic, the change is narrowly scoped, and it does not alter public behavior, data semantics, permissions, security posture, API contracts, billing, migrations, or architecture.
+- **Ask the user before fixing** accepted findings when the fix changes user-visible behavior, public API shape, data model, access control, security policy, billing/payment behavior, migration strategy, production configuration, dependencies, architecture, or has multiple reasonable implementation options.
+- **P0** findings usually block for user confirmation unless the fix is mechanical and safety-preserving, such as restoring a read-only boundary, disabling a destructive default, or adding an obvious guard.
+- **P1** findings can be auto-fixed when the remedy is localized and backwards-compatible; otherwise ask before changing behavior or contracts.
+- **P2** findings can be auto-fixed when low-risk and local. Defer or ask when the fix requires refactoring, new dependencies, broad rewrites, or product/design tradeoffs.
+- **Unclear / disputed** findings are never auto-fixed. Ask codex for evidence first, then decide again.
+
 # 启动
 
 1. **判断 review 类型** (from the user's task):
@@ -110,7 +121,7 @@ Run an iterative review cycle with `codex` (OpenAI Codex CLI) as a second-opinio
    - **False positive** -> reply in codex session with evidence: `"<X> 不是问题, 理由: <Y>"`, ask for re-review
    - **Unclear / disputed** -> ask codex to justify with concrete failure mode, affected path, and evidence; do not fix until you agree it is real
    - **P3 / preference** -> mark "已知忽略", skip
-4. Only implement fixes for findings you accept as real. Do not change code or plans merely to satisfy Codex.
+4. Apply the Fix Authority rules before editing. Only implement fixes for findings you accept as real and are authorized to fix automatically; ask the user before high-impact or ambiguous fixes. Do not change code or plans merely to satisfy Codex.
 5. For each item in the log, record decision: `accepted`, `false-positive`, `disputed`, `deferred`, or `unresolved`, with a short reason.
 6. For each item in the log, record status: `open`, `fixed`, `false-positive`, `deferred`, or `unresolved`. Use `deferred` only for P2 findings; P0/P1 must be `fixed`, `false-positive`, or explicitly accepted by the user as `unresolved`.
 7. After changes or rebuttals, resume codex using the recorded continuation command:
